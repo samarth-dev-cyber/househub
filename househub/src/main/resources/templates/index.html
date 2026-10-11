@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('House expenses')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="wrap">
+  <h1>Shared house expenses</h1>
+  <p class="lede">Attach the bill, bank screenshot or payment confirmation, choose who shares it, and see what each person has paid, owes and is owed.</p>
+
+  <div class="error" role="alert" th:if="${error}" th:text="${error}"></div>
+
+  <section class="block" aria-labelledby="totals">
+    <h2 id="totals">Total and balances</h2>
+    <p class="total"><small>All expenses added</small>₹<span th:text="${#numbers.formatDecimal(total,1,'COMMA',2,'POINT')}">0.00</span></p>
+    <div class="table-scroll" th:if="${!balances.isEmpty()}">
+      <table>
+        <thead><tr><th>Member</th><th class="num">Paid</th><th class="num">Share owed</th><th class="num">Balance</th></tr></thead>
+        <tbody>
+          <tr th:each="b : ${balances}">
+            <td th:text="${b.name()}"></td>
+            <td class="num" th:text="${#numbers.formatDecimal(b.paid(),1,'COMMA',2,'POINT')}"></td>
+            <td class="num" th:text="${#numbers.formatDecimal(b.owed(),1,'COMMA',2,'POINT')}"></td>
+            <td class="num" th:classappend="${b.net().signum() > 0} ? 'pos' : (${b.net().signum() < 0} ? 'neg' : '')"
+                th:text="${b.net().signum() > 0 ? 'Gets back ' : (b.net().signum() < 0 ? 'Owes ' : 'Settled ')} + ${b.net().signum() == 0 ? '' : '₹' + #numbers.formatDecimal(b.net().abs(),1,'COMMA',2,'POINT')}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="empty" th:if="${balances.isEmpty()}">Add the people who live in the house to start.</p>
+  </section>
+
+  <section class="block" aria-labelledby="members">
+    <h2 id="members">Members</h2>
+    <form class="inline" method="post" action="/members">
+      <div><label for="name">Name</label><input id="name" name="name" type="text" maxlength="60" required></div>
+      <button type="submit">Add member</button>
+    </form>
+  </section>
+
+  <section class="block" aria-labelledby="add">
+    <h2 id="add">Add an expense</h2>
+    <p class="empty" th:if="${members.isEmpty()}">Add at least one member before recording an expense.</p>
+    <form class="grid" method="post" action="/expenses" enctype="multipart/form-data" th:if="${!members.isEmpty()}">
+      <div><label for="title">Description</label><input id="title" name="title" type="text" maxlength="120" required></div>
+      <div><label for="amount">Amount (₹)</label><input id="amount" name="amount" type="number" min="0.01" step="0.01" required></div>
+      <div><label for="date">Date</label><input id="date" name="date" type="date" th:value="${today}" required></div>
+      <div><label for="paidById">Paid by</label>
+        <select id="paidById" name="paidById" required><option th:each="m : ${members}" th:value="${m.id}" th:text="${m.name}"></option></select></div>
+      <fieldset class="full"><legend>Shared by</legend>
+        <label th:each="m : ${members}"><input type="checkbox" name="participantIds" th:value="${m.id}" checked> <span th:text="${m.name}"></span></label>
+      </fieldset>
+      <div class="full"><label for="receipt">Bill, screenshot or payment confirmation (PNG, JPG, WEBP, GIF or PDF, up to 10 MB)</label>
+        <input id="receipt" name="receipt" type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" required></div>
+      <div class="full"><button type="submit">Save expense</button></div>
+    </form>
+  </section>
+
+  <section class="block" aria-labelledby="list">
+    <h2 id="list">Expenses</h2>
+    <p class="empty" th:if="${expenses.isEmpty()}">No expenses yet. Add the first one above.</p>
+    <div class="table-scroll" th:if="${!expenses.isEmpty()}">
+      <table>
+        <thead><tr><th>Date</th><th>Description</th><th>Paid by</th><th>Shared by</th><th class="num">Amount</th><th class="num">Each</th><th>Proof</th><th></th></tr></thead>
+        <tbody>
+          <tr th:each="e : ${expenses}">
+            <td th:text="${#temporals.format(e.date,'d MMM yyyy')}"></td>
+            <td th:text="${e.title}"></td>
+            <td th:text="${e.paidBy.name}"></td>
+            <td th:text="${e.participantNames}"></td>
+            <td class="num" th:text="${#numbers.formatDecimal(e.amount,1,'COMMA',2,'POINT')}"></td>
+            <td class="num" th:text="${#numbers.formatDecimal(e.share,1,'COMMA',2,'POINT')}"></td>
+            <td><a th:href="@{/receipts/{f}(f=${e.receiptFile})}" target="_blank" rel="noopener" th:text="${e.receiptName}"></a></td>
+            <td><form method="post" th:action="@{/expenses/{id}/delete(id=${e.id})}"><button class="danger" type="submit" th:aria-label="'Delete ' + ${e.title}">Delete</button></form></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

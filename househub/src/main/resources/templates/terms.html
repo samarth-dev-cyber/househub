@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Terms and conditions')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="wrap legal">
+  <h1>Terms and conditions</h1>
+  <p>Last updated: [DATE]. By using House expenses you agree to these terms. Contact: [YOUR CONTACT EMAIL].</p>
+  <h2>What the service does</h2>
+  <p>House expenses records shared costs and calculates each member's share. Calculations divide each expense equally among the members you select and round to the nearest paisa, so totals can differ by a few paise.</p>
+  <h2>Your responsibilities</h2>
+  <p>Enter accurate amounts and upload only files you have the right to share. Do not upload unlawful content or files that contain other people's data without their consent.</p>
+  <h2>No payment processing</h2>
+  <p>The service does not move money. Balances are a record of who owes whom, and settling them happens outside the service.</p>
+  <h2>Availability and liability</h2>
+  <p>The service is provided as is. To the extent allowed by law, we are not liable for losses caused by errors in entered data or by downtime. [Have a lawyer review this section for your jurisdiction.]</p>
+  <h2>Changes</h2>
+  <p>We may update these terms. The date above shows the latest version.</p>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>
